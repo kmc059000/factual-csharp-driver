@@ -7,7 +7,12 @@ namespace FactualDriver.Exceptions
     /// <summary>
     /// Factaul api exception class, represent an error received from the Factual API.
     /// </summary>
+
+#if PORTABLE
+    [DataContract]
+#else
     [Serializable]
+#endif
     public class FactualApiException : Exception 
     {
         /// <summary>
@@ -36,9 +41,11 @@ namespace FactualDriver.Exceptions
             Url = url;
         }
 
+#if !PORTABLE
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);
         }
+#endif
     }
 }

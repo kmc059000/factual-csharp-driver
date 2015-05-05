@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Web;
 using OAuth2LeggedAuthenticator = FactualDriver.OAuth.OAuth2LeggedAuthenticator;
 
 namespace FactualDriver
@@ -571,7 +570,7 @@ namespace FactualDriver
 
             if (fields != null && fields.Count > 0)
             {
-                postData += "&fields=" + HttpUtility.UrlEncode(JsonConvert.SerializeObject(fields));
+                postData += "&fields=" + WebUtility.UrlEncode(JsonConvert.SerializeObject(fields));
             }
 
             return RequestPost(root, postData, "");
@@ -811,7 +810,7 @@ namespace FactualDriver
                     }
 
                     throw new FactualApiException(response.StatusCode, text,
-                                                  HttpUtility.UrlDecode(completePathWithQuery));
+                                                  WebUtility.UrlDecode(completePathWithQuery));
                 }
             }
             return jsonResult;
@@ -824,9 +823,9 @@ namespace FactualDriver
             {
                 
                 if (pair.Value.GetType().ToString().Contains("System.Collections.Generic.Dictionary"))
-                    urlForRaw += HttpUtility.UrlEncode(pair.Key) + "=" + HttpUtility.UrlEncode(JsonConvert.SerializeObject(pair.Value)) + "&";
+                    urlForRaw += WebUtility.UrlEncode(pair.Key) + "=" + WebUtility.UrlEncode(JsonConvert.SerializeObject(pair.Value)) + "&";
                 else
-                    urlForRaw += HttpUtility.UrlEncode(pair.Key) + "=" + HttpUtility.UrlEncode(pair.Value.ToString()) + "&";
+                    urlForRaw += WebUtility.UrlEncode(pair.Key) + "=" + WebUtility.UrlEncode(pair.Value.ToString()) + "&";
             }
             if (urlForRaw.Length > 0)
 				urlForRaw = urlForRaw.Remove(urlForRaw.Length - 1).Replace("%22%5b", "%5b").Replace("%5d%22", "%5d").Replace("=False", "=false").Replace("=True", "=true");

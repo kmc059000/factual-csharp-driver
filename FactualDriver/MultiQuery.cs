@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
 
 namespace FactualDriver
 {
@@ -44,7 +44,7 @@ namespace FactualDriver
         public string ToUrlQuery()
         {
             var queries = string.Join(",", _queries.Select(p => string.Format("\"{0}\":\"/{1}\"", p.Key, p.Value)));
-            return "queries=" + HttpUtility.UrlEncode("{" + queries + "}");
+            return "queries=" + WebUtility.UrlEncode("{" + queries + "}");
         }
     }
 }

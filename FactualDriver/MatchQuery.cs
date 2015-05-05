@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Web;
+using System.Net;
 
 namespace FactualDriver
 {
@@ -40,7 +40,7 @@ namespace FactualDriver
         /// <returns>string</returns>
         public string ToUrlQuery()
         {
-            return string.Format("{0}={1}", Constants.MATCH_VALUES, HttpUtility.UrlEncode(JsonConvert.SerializeObject(_parameters)));
+            return string.Format("{0}={1}", Constants.MATCH_VALUES, WebUtility.UrlEncode(JsonConvert.SerializeObject(_parameters)));
         }
     }
 }

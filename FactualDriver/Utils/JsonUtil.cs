@@ -1,8 +1,8 @@
 ﻿using FactualDriver.Filters;
 using Newtonsoft.Json;
 using System.Linq;
-using System.Web;
 using System.Collections.Generic;
+using System.Net;
 
 namespace FactualDriver.Utils
 {
@@ -19,7 +19,7 @@ namespace FactualDriver.Utils
         /// <returns>Returns uri encoded query string.</returns>
         public static string ToQueryString(IEnumerable<IFilter> filters)
         {
-            var parameters = filters.Select(filter => string.Format("{0}={1}", filter.Name, HttpUtility.UrlEncode(JsonConvert.SerializeObject(filter)))).ToList();
+            var parameters = filters.Select(filter => string.Format("{0}={1}", filter.Name, WebUtility.UrlEncode(JsonConvert.SerializeObject(filter)))).ToList();
             return string.Join("&", parameters);
         }
 
