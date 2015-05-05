@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactualDriver", "FactualDriver\FactualDriver.csproj", "{B2942A73-0284-4912-9770-56194A61D161}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FactualDriver.Tests", "FactualDriver.Tests\FactualDriver.Tests.csproj", "{33032C3A-6CFE-49CA-AD3D-0EB760C7D920}"
