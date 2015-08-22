@@ -3,7 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+#if !PORTABLE
 using System.Security.Cryptography;
+#else
+using PCLCrypto;
+#endif
 using System.Text;
 
 namespace FactualDriver.OAuth
@@ -66,7 +70,7 @@ namespace FactualDriver.OAuth
         /// like HMAC and its derivatives, they should be initialized prior to passing it to this function</param>
         /// <param name="data">The data to hash</param>
         /// <returns>a Base64 string of the hash value</returns>
-        private static string ComputeHash(HashAlgorithm hashAlgorithm, string data)
+        private static string ComputeHash(IMacAlgorithmProvider hashAlgorithm, string data)
         {
             if (hashAlgorithm == null)
             {
@@ -78,8 +82,10 @@ namespace FactualDriver.OAuth
                 throw new ArgumentNullException("data");
             }
 
-            byte[] dataBuffer = System.Text.Encoding.ASCII.GetBytes(data);
-            byte[] hashBytes = hashAlgorithm.ComputeHash(dataBuffer);
+            byte[] dataBuffer = System.Text.Encoding.UTF8.GetBytes(data);
+            var hashedData = hashAlgorithm.CreateHash(dataBuffer);
+
+            byte[] hashBytes = hashedData.GetValueAndReset();
 
             return Convert.ToBase64String(hashBytes);
         }
@@ -315,7 +321,7 @@ namespace FactualDriver.OAuth
         /// <param name="signatureBase">The signature based as produced by the GenerateSignatureBase method or by any other means</param>
         /// <param name="hash">The hash algorithm used to perform the hashing. If the hashing algorithm requires initialization or a key it should be set prior to calling this method</param>
         /// <returns>A base64 string of the hash value</returns>
-        public static string GenerateSignatureUsingHash(string signatureBase, HashAlgorithm hash)
+        public static string GenerateSignatureUsingHash(string signatureBase, IMacAlgorithmProvider hash)
         {
             return ComputeHash(hash, signatureBase);
         }
@@ -384,9 +390,9 @@ namespace FactualDriver.OAuth
                     return UrlEncode(string.Format("{0}&{1}", parameters.ConsumerKey, parameters.TokenSecret));
                 case HMACSHA1SignatureType:
                     string signatureBase = GenerateSignatureBase(url, httpMethod, parameters);
-
-                    HMACSHA1 hmacsha1 = new HMACSHA1();
-                    hmacsha1.Key = Encoding.ASCII.GetBytes(GenerateOAuthSignature(parameters.ConsumerSecret, parameters.TokenSecret));
+                    
+                    var hmacsha1 = WinRTCrypto.MacAlgorithmProvider.OpenAlgorithm(MacAlgorithm.HmacSha1);
+                    hmacsha1.CreateKey(Encoding.UTF8.GetBytes(GenerateOAuthSignature(parameters.ConsumerSecret, parameters.TokenSecret)));
 
                     return GenerateSignatureUsingHash(signatureBase, hmacsha1);
                 case RSASHA1SignatureType:
@@ -470,7 +476,7 @@ namespace FactualDriver.OAuth
                 e = Encoding.UTF8;
 
             long len = s.Length;
-#if NET_2_0
+#if NET_2_0 || PORTABLE
             var bytes = new List <byte>();
 #else
             ArrayList bytes = new ArrayList();
@@ -515,14 +521,14 @@ namespace FactualDriver.OAuth
                     WriteCharBytes(bytes, ch, e);
             }
 
-#if NET_2_0
+#if NET_2_0 || PORTABLE
             byte[] buf = bytes.ToArray ();
 #else
             byte[] buf = (byte[])bytes.ToArray(typeof(byte));
 #endif
 
             bytes = null;
-            return e.GetString(buf);
+            return e.GetString(buf, 0 , buf.Length);
         }
 
         static void WriteCharBytes(IList buf, char ch, Encoding e)
@@ -604,7 +610,7 @@ namespace FactualDriver.OAuth
             // avoided GetByteCount call
             byte[] bytes = new byte[Enc.GetMaxByteCount(s.Length)];
             int realLen = Enc.GetBytes(s, 0, s.Length, bytes, 0);
-            return Encoding.ASCII.GetString(UrlEncodeToBytes(bytes, 0, realLen));
+            return Encoding.UTF8.GetString(UrlEncodeToBytes(bytes, 0, realLen), 0 , realLen);
         }
 
         static bool NotEncoded(char c)
