@@ -302,8 +302,8 @@ namespace FactualDriver.OAuth
             StringBuilder signatureBase = new StringBuilder();
             signatureBase.AppendFormat(CultureInfo.InvariantCulture, "{0}&", httpMethod.ToUpper());
             signatureBase.AppendFormat(CultureInfo.InvariantCulture, "{0}&", EncodingPerRFC3986(normalizedUrl));
-            System.Diagnostics.Trace.WriteLine("==== OAuth Signature Base parameters ====");
-            System.Diagnostics.Trace.WriteLine(EncodingPerRFC3986(normalizedRequestParameters));
+            System.Diagnostics.Debug.WriteLine("==== OAuth Signature Base parameters ====");
+            System.Diagnostics.Debug.WriteLine(EncodingPerRFC3986(normalizedRequestParameters));
             signatureBase.AppendFormat(CultureInfo.InvariantCulture, "{0}", EncodingPerRFC3986(normalizedRequestParameters));
 
             return signatureBase.ToString();
