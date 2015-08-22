@@ -321,7 +321,7 @@ namespace FactualDriver.OAuth
         /// <param name="signatureBase">The signature based as produced by the GenerateSignatureBase method or by any other means</param>
         /// <param name="hash">The hash algorithm used to perform the hashing. If the hashing algorithm requires initialization or a key it should be set prior to calling this method</param>
         /// <returns>A base64 string of the hash value</returns>
-        public static string GenerateSignatureUsingHash(string signatureBase, IMacAlgorithmProvider hash)
+        private static string GenerateSignatureUsingHash(string signatureBase, IMacAlgorithmProvider hash)
         {
             return ComputeHash(hash, signatureBase);
         }
