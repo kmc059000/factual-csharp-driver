@@ -27,13 +27,17 @@ namespace FactualDriver.OAuth
         /// <summary>
         /// Adds authentication headers to the HttpWebRequest
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="client"></param>
         /// <param name="requestUri"></param>
         /// <param name="method"></param>
-        public void ApplyAuthenticationToRequest(HttpContent content, Uri requestUri, HttpMethod method)
+        public void ApplyAuthenticationToRequest(HttpClient client, Uri requestUri, HttpMethod method)
         {
-            string header = OAuthUtil.GenerateHeader(requestUri, _constumerKey, _constumerSecret, null, null, method.ToString());
-            content.Headers.Add("Authorization", header);
+            var headers = OAuthUtil.GenerateHeaders(requestUri, _constumerKey, _constumerSecret, null, null, method.ToString());
+
+            foreach (var header in headers)
+            {
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
         }
     }
 }

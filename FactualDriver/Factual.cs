@@ -75,7 +75,7 @@ namespace FactualDriver
             string factualApiUrl = string.IsNullOrEmpty(FactualApiUrlOverride) ? "http://api.v3.factual.com" : FactualApiUrlOverride;
             var requestUrl = new Uri(new Uri(factualApiUrl), query);
 
-            _factualAuthenticator.ApplyAuthenticationToRequest(new StringContent(""), requestUrl, HttpMethod.Get);
+            _factualAuthenticator.ApplyAuthenticationToRequest(client, requestUrl, HttpMethod.Get);
 
             client.DefaultRequestHeaders.Add("X-Factual-Lib", DriverHeaderTag);
             client.Timeout = TimeSpan.FromMilliseconds(ConnectionTimeout ?? 100000);
@@ -729,10 +729,12 @@ namespace FactualDriver
                     System.Diagnostics.Debug.WriteLine(request.BaseAddress + completePathWithQuery);
                 }
 
-                var response = await request.PostAsync(completePathWithQuery, new ByteArrayContent(Encoding.UTF8.GetBytes(postData))
+                var content = new ByteArrayContent(Encoding.UTF8.GetBytes(postData))
                 {
                     Headers = { ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded") }
-                });
+                };
+
+                var response = await request.PostAsync(completePathWithQuery, content);
 
                 return await ReadRequest(completePathWithQuery, response);
             }

@@ -16,6 +16,9 @@
 */
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 
 namespace FactualDriver.OAuth
@@ -34,9 +37,9 @@ namespace FactualDriver.OAuth
         /// <param name="consumerSecret">The consumer secret</param>
         /// <param name="httpMethod">The http method</param>
         /// <returns>The OAuth authorization header</returns>
-        public static string GenerateHeader(Uri uri, string consumerKey, string consumerSecret, string httpMethod)
+        public static IDictionary<string, string> GenerateHeaders(Uri uri, string consumerKey, string consumerSecret, string httpMethod)
         {
-            return GenerateHeader(uri, consumerKey, consumerSecret, string.Empty, string.Empty, httpMethod);
+            return GenerateHeaders(uri, consumerKey, consumerSecret, string.Empty, string.Empty, httpMethod);
         }
 
         /// <summary>
@@ -49,7 +52,7 @@ namespace FactualDriver.OAuth
         /// <param name="tokenSecret">The OAuth token secret</param>
         /// <param name="httpMethod">The http method</param>
         /// <returns>The OAuth authorization header</returns>
-        public static string GenerateHeader(Uri uri, string consumerKey, string consumerSecret, string token,
+        public static IDictionary<string, string> GenerateHeaders(Uri uri, string consumerKey, string consumerSecret, string token,
             string tokenSecret, string httpMethod)
         {
             OAuthParameters parameters = new OAuthParameters()
@@ -60,7 +63,7 @@ namespace FactualDriver.OAuth
                 TokenSecret = tokenSecret,
                 SignatureMethod = OAuthBase.HMACSHA1SignatureType
             };
-            return GenerateHeader(uri, httpMethod, parameters);
+            return GenerateHeaders(uri, httpMethod, parameters);
         }
 
         /// <summary>
@@ -70,34 +73,39 @@ namespace FactualDriver.OAuth
         /// <param name="httpMethod">The http method</param>
         /// <param name="parameters">The OAuth parameters</param>
         /// <returns>The OAuth authorization header</returns>
-        public static string GenerateHeader(Uri uri, string httpMethod, OAuthParameters parameters)
+        public static IDictionary<string, string> GenerateHeaders(Uri uri, string httpMethod, OAuthParameters parameters)
+        {
+            return GenerateHeadersInternal(uri, httpMethod, parameters).ToDictionary(x => x.Item1, x => x.Item2);
+        }
+
+        private static IEnumerable<Tuple<string, string>> GenerateHeadersInternal(Uri uri, string httpMethod, OAuthParameters parameters)
         {
             parameters.Timestamp = OAuthBase.GenerateTimeStamp();
             parameters.Nonce = OAuthBase.GenerateNonce();
-
             string signature = OAuthBase.GenerateSignature(uri, httpMethod, parameters);
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("Authorization: OAuth {0}=\"{1}\",", OAuthBase.OAuthVersionKey, OAuthBase.OAuthVersion);
-            sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthNonceKey, OAuthBase.EncodingPerRFC3986(parameters.Nonce));
-            sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthTimestampKey, OAuthBase.EncodingPerRFC3986(parameters.Timestamp));
-            sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthConsumerKeyKey, OAuthBase.EncodingPerRFC3986(parameters.ConsumerKey));
+            //sb.AppendFormat("Authorization: OAuth {0}=\"{1}\",", OAuthBase.OAuthVersionKey, OAuthBase.OAuthVersion);
+            yield return Tuple.Create(OAuthBase.OAuthNonceKey, OAuthBase.EncodingPerRFC3986(parameters.Nonce));
+            yield return Tuple.Create(OAuthBase.OAuthTimestampKey, OAuthBase.EncodingPerRFC3986(parameters.Timestamp));
+            yield return Tuple.Create(OAuthBase.OAuthConsumerKeyKey, OAuthBase.EncodingPerRFC3986(parameters.ConsumerKey));
+            
+
             if (parameters.BaseProperties.ContainsKey(OAuthBase.OAuthVerifierKey))
             {
-                sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthVerifierKey, OAuthBase.EncodingPerRFC3986(parameters.BaseProperties[OAuthBase.OAuthVerifierKey]));
+                yield return Tuple.Create(OAuthBase.OAuthVerifierKey, 
+                    OAuthBase.EncodingPerRFC3986(parameters.BaseProperties[OAuthBase.OAuthVerifierKey]));
             }
             if (!String.IsNullOrEmpty(parameters.Token))
             {
-                sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthTokenKey, OAuthBase.EncodingPerRFC3986(parameters.Token));
+                yield return Tuple.Create(OAuthBase.OAuthTokenKey, OAuthBase.EncodingPerRFC3986(parameters.Token));
             }
             if (parameters.BaseProperties.ContainsKey(OAuthBase.OAuthCallbackKey))
             {
-                sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthCallbackKey, OAuthBase.EncodingPerRFC3986(parameters.BaseProperties[OAuthBase.OAuthCallbackKey]));
+                yield return Tuple.Create(OAuthBase.OAuthCallbackKey, 
+                    OAuthBase.EncodingPerRFC3986(parameters.BaseProperties[OAuthBase.OAuthCallbackKey]));
             }
-            sb.AppendFormat("{0}=\"{1}\",", OAuthBase.OAuthSignatureMethodKey, OAuthBase.HMACSHA1SignatureType);
-            sb.AppendFormat("{0}=\"{1}\"", OAuthBase.OAuthSignatureKey, OAuthBase.EncodingPerRFC3986(signature));
-
-            return sb.ToString();
+            yield return Tuple.Create(OAuthBase.OAuthSignatureMethodKey, OAuthBase.HMACSHA1SignatureType);
+            yield return Tuple.Create(OAuthBase.OAuthSignatureKey, OAuthBase.EncodingPerRFC3986(signature));
         }
     }
 }
