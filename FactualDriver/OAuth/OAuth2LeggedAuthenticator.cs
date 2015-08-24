@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 
 namespace FactualDriver.OAuth
 {
@@ -26,20 +27,13 @@ namespace FactualDriver.OAuth
         /// <summary>
         /// Adds authentication headers to the HttpWebRequest
         /// </summary>
-        /// <param name="request">HttpWebRequest to add authentication headers.</param>
-        public void ApplyAuthenticationToRequest(HttpWebRequest request)
+        /// <param name="content"></param>
+        /// <param name="requestUri"></param>
+        /// <param name="method"></param>
+        public void ApplyAuthenticationToRequest(HttpContent content, Uri requestUri, HttpMethod method)
         {
-            string header = OAuthUtil.GenerateHeader(request.RequestUri, _constumerKey, _constumerSecret, null, null, request.Method);
-            request.Headers.Add(header);
-        }
-
-        public HttpWebRequest CreateHttpWebRequest(string httpMethod, Uri targetUri)
-        {
-            HttpWebRequest request = WebRequest.Create(targetUri) as HttpWebRequest;
-            request.AllowAutoRedirect = false;
-            request.Method = httpMethod;
-            ApplyAuthenticationToRequest(request);
-            return request;
+            string header = OAuthUtil.GenerateHeader(requestUri, _constumerKey, _constumerSecret, null, null, method.ToString());
+            content.Headers.Add("Authorization", header);
         }
     }
 }
