@@ -73,7 +73,9 @@ namespace FactualDriver
             var client = new HttpClient();
 
             string factualApiUrl = string.IsNullOrEmpty(FactualApiUrlOverride) ? "http://api.v3.factual.com" : FactualApiUrlOverride;
-            var requestUrl = new Uri(new Uri(factualApiUrl), query);
+            client.BaseAddress = new Uri(factualApiUrl);
+
+            var requestUrl = new Uri(client.BaseAddress, query);
 
             _factualAuthenticator.ApplyAuthenticationToRequest(client, requestUrl, HttpMethod.Get);
 
